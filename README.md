@@ -1,179 +1,232 @@
 # Job Hunter
 
-Automated job application pipeline for [Claude Code](https://claude.ai/claude-code). Searches LinkedIn, Indeed, Greenhouse, and Lever, then guides you through company research, resume tailoring, and cover letter drafting.
+An automated job search and application tool. It finds jobs across LinkedIn, Indeed, Greenhouse, and Lever, then helps you research companies, tailor your resume, and draft cover letters — all from your terminal.
 
-## Prerequisites
+Works standalone or as a [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skill that lets you just say "find me jobs" and have Claude do the rest.
 
-- [Bun](https://bun.sh/) v1.0+
-- [Claude Code](https://claude.ai/claude-code) (optional — works standalone as a CLI too)
+## What does this do?
 
-## Setup
+1. **Searches multiple job boards at once** — LinkedIn, Indeed, plus any company career pages you configure (Greenhouse and Lever)
+2. **Tracks your applications** — saves jobs you're interested in and tracks their status
+3. **Generates application materials** — company research briefs, tailored resumes, and cover letters, all based on your profile
 
-### 1. Clone and install
+## Getting started
 
+### Step 1: Install Bun (the JavaScript runtime)
+
+Job Hunter runs on [Bun](https://bun.sh/), a fast JavaScript runtime. If you don't have it yet:
+
+**Mac:**
 ```bash
-git clone https://github.com/tinyclaw/job-hunter.git ~/.claude/skills/job-hunter
-cd ~/.claude/skills/job-hunter
+curl -fsSL https://bun.sh/install | bash
+```
+
+**Windows (WSL) / Linux:**
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+After installing, close and reopen your terminal, then verify it worked:
+```bash
+bun --version
+```
+You should see a version number like `1.x.x`.
+
+### Step 2: Download Job Hunter
+
+Open your terminal and run:
+```bash
+git clone https://github.com/tjp2021/job-hunter.git
+cd job-hunter
+```
+
+Then install the dependencies:
+```bash
 bun install
 ```
 
-### 2. Create your profile
+> **Using with Claude Code?** Clone into the skills directory instead so Claude picks it up automatically:
+> ```bash
+> git clone https://github.com/tjp2021/job-hunter.git ~/.claude/skills/job-hunter
+> cd ~/.claude/skills/job-hunter
+> bun install
+> ```
+
+### Step 3: Set up your profile
+
+Your profile is how Job Hunter knows about your background so it can tailor resumes and cover letters for you. Create one:
 
 ```bash
 bun run job-hunt.ts profile init
 ```
 
-This copies `data/profile.example.json` to `data/profile.json`. Open it and fill in your details:
+This creates a file called `data/profile.json`. Open it in any text editor (VS Code, TextEdit, Notepad, etc.) and replace the example data with your own. Here's what each section means:
 
 ```json
 {
-  "name": "Your Name",
-  "email": "you@example.com",
-  "location": "City, ST",
-  "summary": "Brief professional summary...",
-  "targetRoles": ["Senior Software Engineer", "Backend Engineer"],
+  "name": "Your full name",
+  "email": "your.email@example.com",
+  "location": "City, State",
+  "summary": "A 1-2 sentence summary of who you are professionally",
+
+  "targetRoles": ["Job titles you're looking for"],
+
   "experience": [
     {
-      "company": "Acme Corp",
-      "title": "Software Engineer",
+      "company": "Where you worked",
+      "title": "Your job title",
       "dates": "2022 - Present",
       "bullets": [
-        "Built X that did Y resulting in Z"
+        "What you accomplished (use numbers when possible)",
+        "Example: Reduced page load time by 40% by optimizing database queries"
       ],
-      "technologies": ["Go", "PostgreSQL", "Kubernetes"]
+      "technologies": ["Tools", "Languages", "Frameworks you used"]
     }
   ],
+
   "education": [
     {
-      "school": "University Name",
-      "degree": "B.S. Computer Science",
-      "year": "2020"
+      "school": "School name",
+      "degree": "Your degree",
+      "year": "Graduation year"
     }
   ],
+
   "skills": [
-    { "category": "Languages", "items": ["Go", "Python", "TypeScript"] },
-    { "category": "Infrastructure", "items": ["Kubernetes", "AWS", "Terraform"] }
+    { "category": "Languages", "items": ["Python", "JavaScript"] },
+    { "category": "Tools", "items": ["Git", "Docker"] }
   ],
+
   "preferences": {
-    "salary": "$150,000 - $200,000",
+    "salary": "$100,000 - $150,000",
     "jobType": "fulltime",
     "remote": true,
-    "greenhouseBoards": ["stripe", "anthropic"],
-    "leverSites": ["netflix"],
+    "greenhouseBoards": [],
+    "leverSites": [],
     "proxies": []
   }
 }
 ```
 
-The `preferences` section controls which Greenhouse/Lever company boards get searched alongside LinkedIn and Indeed. Add any company's board slug (the part in their careers URL).
+> **Tip:** Don't worry about getting it perfect. You can always edit this file later.
 
-### 3. Verify it works
+### Step 4: Run your first search
 
 ```bash
 bun run job-hunt.ts search "software engineer" --results 5
 ```
 
-You should see job listings from your configured sources.
+You should see a list of job postings. If you do, everything is working.
 
-## Usage
+## How to use it
 
-### Search for jobs
+### Searching for jobs
+
+The basic command is:
+```bash
+bun run job-hunt.ts search "your job title here"
+```
+
+You can add filters to narrow results:
 
 ```bash
-# Basic search
-bun run job-hunt.ts search "backend engineer"
+# Only remote jobs
+bun run job-hunt.ts search "frontend developer" --remote
 
-# With filters
-bun run job-hunt.ts search "ML engineer" --location "San Francisco" --remote --results 20
+# In a specific city
+bun run job-hunt.ts search "data analyst" --location "New York, NY"
 
-# Save results to tracker
-bun run job-hunt.ts search "senior engineer" --save
+# Only from LinkedIn
+bun run job-hunt.ts search "product manager" --site linkedin
 
-# Use a proxy for LinkedIn/Indeed (avoids rate limiting)
-bun run job-hunt.ts search "engineer" --proxy "user:pass@proxy.example.com:8080"
+# Get more results (default is 15)
+bun run job-hunt.ts search "designer" --results 30
+
+# Only jobs posted in the last 24 hours
+bun run job-hunt.ts search "engineer" --hours-old 24
+
+# Filter by job type
+bun run job-hunt.ts search "developer" --job-type contract
+
+# Save all results so you can work with them later
+bun run job-hunt.ts search "backend engineer" --remote --save
 ```
 
-**Search options:**
+You can combine any of these filters together.
 
-| Flag | Description |
-|------|-------------|
-| `--site linkedin\|indeed` | Restrict to one job board |
-| `--location "City, ST"` | Location filter |
-| `--remote` | Remote jobs only |
-| `--results N` | Number of results (default: 15) |
-| `--hours-old N` | Max posting age in hours |
-| `--job-type fulltime\|parttime\|contract\|internship` | Job type filter |
-| `--proxy "host:port"` | Proxy for LinkedIn/Indeed scraping |
-| `--save` | Auto-save all results to tracker |
-| `--json` | Raw JSON output |
+### Saving and tracking jobs
 
-### Track jobs
+When you find jobs you like, use `--save` to add them to your tracker:
 
 ```bash
-bun run job-hunt.ts jobs                        # List all tracked jobs
-bun run job-hunt.ts jobs show <id>              # Show job details
-bun run job-hunt.ts jobs status <id> applied    # Update status
-bun run job-hunt.ts jobs remove <id>            # Remove from tracker
+bun run job-hunt.ts search "ML engineer" --save
 ```
 
-Statuses: `new` > `researched` > `tailored` > `applied` > `interviewing` > `offer` / `rejected`
-
-### Application pipeline
-
-Each step prints a structured prompt. If using Claude Code, it will execute the instructions automatically (researching the company, writing your tailored resume, drafting the cover letter).
-
+Then manage them:
 ```bash
-bun run job-hunt.ts research <id>     # Step 1: Company research
-bun run job-hunt.ts tailor <id>       # Step 2: Resume tailoring
-bun run job-hunt.ts letter <id>       # Step 3: Cover letter
-bun run job-hunt.ts package <id>      # All three steps at once
+# See all your saved jobs
+bun run job-hunt.ts jobs
+
+# See details about a specific job (use the ID from the list)
+bun run job-hunt.ts jobs show abc123
+
+# Update the status as you progress
+bun run job-hunt.ts jobs status abc123 applied
+bun run job-hunt.ts jobs status abc123 interviewing
+
+# Remove a job you're no longer interested in
+bun run job-hunt.ts jobs remove abc123
 ```
 
-### Full pipeline (search + save + all prompts)
+Job statuses go: `new` > `researched` > `tailored` > `applied` > `interviewing` > `offer` or `rejected`
 
+### Preparing your application
+
+Once you've saved a job, Job Hunter can help you prepare your application in three steps:
+
+**Step 1 — Research the company:**
 ```bash
-bun run job-hunt.ts pipeline "senior backend engineer" --top 3 --remote
+bun run job-hunt.ts research abc123
 ```
+This generates a research prompt. If you're using Claude Code, it will automatically research the company and save a brief.
 
-Searches, saves the top N jobs, and prints all pipeline prompts for each.
-
-## Proxy setup
-
-LinkedIn rate-limits after ~10 pages of results. To avoid this, configure a proxy:
-
-**One-off (CLI flag):**
+**Step 2 — Tailor your resume:**
 ```bash
-bun run job-hunt.ts search "engineer" --proxy "user:pass@proxy.example.com:8080"
+bun run job-hunt.ts tailor abc123
 ```
+Uses your profile + the job description + the research to create a tailored resume.
 
-**Environment variable:**
+**Step 3 — Write a cover letter:**
 ```bash
-export JOB_HUNTER_PROXY="http://proxy.example.com:8080"
-bun run job-hunt.ts search "engineer"
+bun run job-hunt.ts letter abc123
+```
+Drafts a personalized cover letter using everything from the previous steps.
+
+**Or do all three at once:**
+```bash
+bun run job-hunt.ts package abc123
 ```
 
-**Persistent (profile.json):**
-```json
-{
-  "preferences": {
-    "proxies": ["user:pass@proxy1.com:8080"]
-  }
-}
+### The full pipeline (everything at once)
+
+If you want to search, save, and prepare applications in one go:
+```bash
+bun run job-hunt.ts pipeline "backend engineer" --top 3 --remote
 ```
 
-Priority: `--proxy` flag > `JOB_HUNTER_PROXY` env var > profile config.
+This searches for jobs, saves the top 3, and generates all application materials for each one.
 
-Proxies are only used for LinkedIn/Indeed. Greenhouse and Lever use public APIs that don't rate-limit.
+## Searching company career pages
 
-## Adding company boards
+Many companies post jobs on Greenhouse or Lever before they appear on LinkedIn. You can search these directly by adding company "slugs" to your profile.
 
-To search a company's Greenhouse or Lever job board, add their slug to your profile:
+**How to find a company's slug:**
+1. Go to the company's careers/jobs page
+2. Look at the URL:
+   - If it's `boards.greenhouse.io/stripe`, the slug is `stripe`
+   - If it's `jobs.lever.co/netflix`, the slug is `netflix`
 
-1. Find the slug from their careers page URL:
-   - Greenhouse: `boards.greenhouse.io/stripe` -> slug is `stripe`
-   - Lever: `jobs.lever.co/netflix` -> slug is `netflix`
-
-2. Add to `data/profile.json`:
+**Add them to your profile** (`data/profile.json`):
 ```json
 {
   "preferences": {
@@ -183,40 +236,81 @@ To search a company's Greenhouse or Lever job board, add their slug to your prof
 }
 ```
 
-All configured boards are searched automatically alongside LinkedIn/Indeed.
+Now every search will also check those company boards.
 
-## File structure
+## Proxy setup (optional)
 
-```
-job-hunter/
-├── README.md
-├── SKILL.md              # Claude Code skill metadata
-├── job-hunt.ts           # CLI entry point
-├── package.json
-├── lib/
-│   ├── search.ts         # Multi-source search (ts-jobspy + Greenhouse + Lever)
-│   ├── tracker.ts        # Job CRUD (data/jobs.json)
-│   ├── research.ts       # Company research prompt builder
-│   ├── tailor.ts         # Resume tailoring prompt builder
-│   ├── cover-letter.ts   # Cover letter prompt builder
-│   ├── cache.ts          # File-based cache (30min TTL)
-│   └── format.ts         # Console + markdown formatters
-├── data/
-│   ├── profile.json      # Your resume/profile (git-ignored)
-│   ├── profile.example.json
-│   ├── jobs.json         # Tracked jobs
-│   ├── cache/            # Auto-managed search cache
-│   └── output/<id>/      # Per-job generated materials
-└── references/           # API docs for job board integrations
+If you're doing lots of searches, LinkedIn may temporarily rate-limit you. A proxy helps avoid this. This is totally optional — most people won't need it.
+
+**Option 1 — Pass it directly:**
+```bash
+bun run job-hunt.ts search "engineer" --proxy "user:pass@proxy.example.com:8080"
 ```
 
-## As a Claude Code skill
+**Option 2 — Set an environment variable** (lasts until you close your terminal):
+```bash
+export JOB_HUNTER_PROXY="http://proxy.example.com:8080"
+```
 
-If you cloned this into `~/.claude/skills/job-hunter/`, Claude Code will automatically pick it up. Just say things like:
+**Option 3 — Save it in your profile** (permanent):
+```json
+{
+  "preferences": {
+    "proxies": ["user:pass@proxy.example.com:8080"]
+  }
+}
+```
 
-- "Find me backend engineer jobs in SF"
-- "Search for remote ML roles"
-- "Help me apply to that Stripe job"
-- "/job-hunter"
+If multiple are configured, priority is: command flag > environment variable > profile.
 
-Claude will run the search, save results, research companies, tailor your resume, and draft cover letters — all guided by your profile.
+Proxies are only used for LinkedIn and Indeed. Greenhouse and Lever don't need them.
+
+## Using with Claude Code
+
+If you installed Job Hunter into `~/.claude/skills/job-hunter/`, Claude Code will find it automatically. You don't need to type any commands — just talk naturally:
+
+- "Find me backend engineer jobs in San Francisco"
+- "Search for remote ML roles and save the top 5"
+- "Help me apply to that Stripe posting"
+- "Research the company for job abc123"
+- "Tailor my resume for the Anthropic role"
+
+Claude will run the searches, save results, research companies, write tailored resumes, and draft cover letters — all based on your profile.
+
+## Troubleshooting
+
+**"command not found: bun"**
+Bun isn't installed or your terminal needs to be restarted. Run the install command from Step 1 again, then close and reopen your terminal.
+
+**"No jobs found"**
+Try a broader search term, remove location filters, or increase `--results`. Some job boards may be temporarily unavailable.
+
+**"greenhouse: failed to fetch [company]"**
+The company slug might be wrong. Double-check it by visiting `https://boards.greenhouse.io/[slug]/jobs` in your browser.
+
+**"jobspy error"**
+LinkedIn or Indeed may be rate-limiting you. Wait a few minutes, or set up a proxy (see above).
+
+**Profile not working with tailor/letter commands**
+Make sure `data/profile.json` exists and is valid JSON. A missing comma or extra bracket will break it. You can validate your JSON at [jsonlint.com](https://jsonlint.com/).
+
+## Quick reference
+
+| Command | What it does |
+|---------|-------------|
+| `search "query"` | Find jobs |
+| `search "query" --save` | Find and save jobs |
+| `jobs` | List saved jobs |
+| `jobs show <id>` | Show job details |
+| `jobs status <id> <status>` | Update job status |
+| `jobs remove <id>` | Delete a saved job |
+| `research <id>` | Research the company |
+| `tailor <id>` | Tailor your resume |
+| `letter <id>` | Draft a cover letter |
+| `package <id>` | All three steps at once |
+| `pipeline "query" --top N` | Search + save + prepare top N |
+| `profile` | Show your profile |
+| `profile init` | Create your profile |
+| `cache clear` | Clear search cache |
+
+All commands start with `bun run job-hunt.ts`. Example: `bun run job-hunt.ts search "engineer"`
