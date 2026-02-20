@@ -17,6 +17,7 @@ export interface SearchOptions {
   hoursOld?: number;
   greenhouseBoards?: string[];
   leverSites?: string[];
+  proxy?: string;
 }
 
 const STOPWORDS = new Set(["a", "an", "the", "in", "at", "for", "and", "or", "of", "with", "to", "on", "is"]);
@@ -69,6 +70,7 @@ async function searchJobSpy(query: string, opts: SearchOptions): Promise<JobResu
     hoursOld: opts.hoursOld,
     descriptionFormat: "markdown",
     linkedinFetchDescription: true,
+    proxies: opts.proxy ? [opts.proxy] : undefined,
   });
 
   return results.map((r) => ({

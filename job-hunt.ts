@@ -24,6 +24,7 @@
  *   --results N                    Number of results (default: 15)
  *   --hours-old N                  Max posting age in hours
  *   --job-type fulltime|...        Job type filter
+ *   --proxy "host:port"            Proxy for LinkedIn/Indeed scraping
  *   --save                         Auto-save all results to tracker
  *   --json                         Output raw JSON
  */
@@ -89,11 +90,13 @@ async function cmdSearch() {
   const hoursOldStr = getOpt("hours-old");
   const hoursOld = hoursOldStr ? parseInt(hoursOldStr) : undefined;
   const jobType = getOpt("job-type");
+  const proxyFlag = getOpt("proxy");
 
-  // Load profile for greenhouse/lever boards
+  // Load profile for greenhouse/lever boards + proxy
   const profile = loadProfile();
   const greenhouseBoards = profile?.preferences?.greenhouseBoards || [];
   const leverSites = profile?.preferences?.leverSites || [];
+  const proxy = proxyFlag || process.env.JOB_HUNTER_PROXY || profile?.preferences?.proxies?.[0];
 
   const queryParts = args.slice(1).filter((a) => !a.startsWith("--"));
   const query = queryParts.join(" ");
@@ -114,6 +117,7 @@ async function cmdSearch() {
     jobType,
     greenhouseBoards,
     leverSites,
+    proxy,
   });
 
   if (jobs.length === 0) {
@@ -322,10 +326,12 @@ async function cmdPipeline() {
   const location = getOpt("location");
   const results = parseInt(getOpt("results") || "10");
   const jobType = getOpt("job-type");
+  const proxyFlag = getOpt("proxy");
 
   const profile = loadProfile();
   const greenhouseBoards = profile?.preferences?.greenhouseBoards || [];
   const leverSites = profile?.preferences?.leverSites || [];
+  const proxy = proxyFlag || process.env.JOB_HUNTER_PROXY || profile?.preferences?.proxies?.[0];
 
   const queryParts = args.slice(1).filter((a) => !a.startsWith("--"));
   const query = queryParts.join(" ");
@@ -345,6 +351,7 @@ async function cmdPipeline() {
     jobType,
     greenhouseBoards,
     leverSites,
+    proxy,
   });
 
   if (jobs.length === 0) {
@@ -498,6 +505,7 @@ Search options:
   --results N                    Number of results (default: 15)
   --hours-old N                  Max posting age in hours
   --job-type fulltime|parttime|contract|internship
+  --proxy "host:port"            Proxy for LinkedIn/Indeed (user:pass@host:port or http://host:port)
   --save                         Auto-save all results to tracker
   --json                         Raw JSON output`);
 }
