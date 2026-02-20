@@ -1,0 +1,11 @@
+{
+  "name": "job-hunter",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "hunt": "bun run job-hunt.ts"
+  },
+  "dependencies": {
+    "ts-jobspy": "^2.0.3"
+  }
+}

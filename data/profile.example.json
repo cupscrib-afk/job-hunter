@@ -1,0 +1,68 @@
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "location": "San Francisco, CA",
+  "urls": [
+    "https://github.com/janedoe",
+    "https://linkedin.com/in/janedoe"
+  ],
+  "summary": "Senior software engineer with 6 years of experience building scalable backend systems and data pipelines. Passionate about distributed systems and developer tools.",
+  "targetRoles": [
+    "Senior Software Engineer",
+    "Staff Engineer",
+    "Backend Engineer"
+  ],
+  "experience": [
+    {
+      "company": "Acme Corp",
+      "title": "Senior Software Engineer",
+      "dates": "2022 - Present",
+      "bullets": [
+        "Led migration of monolithic API to microservices architecture, reducing deploy time by 80%",
+        "Designed and built real-time data pipeline processing 2M events/day",
+        "Mentored team of 4 engineers, conducted code reviews and architecture discussions"
+      ],
+      "technologies": ["Go", "PostgreSQL", "Kafka", "Kubernetes", "Terraform"]
+    },
+    {
+      "company": "StartupXYZ",
+      "title": "Software Engineer",
+      "dates": "2019 - 2022",
+      "bullets": [
+        "Built core REST API serving 500K daily active users",
+        "Implemented CI/CD pipeline reducing release cycle from 2 weeks to daily",
+        "Optimized database queries, reducing p99 latency by 40%"
+      ],
+      "technologies": ["Python", "Django", "PostgreSQL", "Redis", "AWS"]
+    }
+  ],
+  "education": [
+    {
+      "school": "University of California, Berkeley",
+      "degree": "B.S. Computer Science",
+      "year": "2019"
+    }
+  ],
+  "skills": [
+    {
+      "category": "Languages",
+      "items": ["Go", "Python", "TypeScript", "SQL"]
+    },
+    {
+      "category": "Infrastructure",
+      "items": ["Kubernetes", "Docker", "Terraform", "AWS", "GCP"]
+    },
+    {
+      "category": "Data",
+      "items": ["PostgreSQL", "Redis", "Kafka", "Elasticsearch"]
+    }
+  ],
+  "preferences": {
+    "salary": "$180,000 - $250,000",
+    "jobType": "fulltime",
+    "remote": true,
+    "excludeCompanies": [],
+    "greenhouseBoards": [],
+    "leverSites": []
+  }
+}
