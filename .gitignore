@@ -2,6 +2,7 @@ node_modules
 *.docx
 *.pdf
 *.doc
+*.txt
 data/profile.json
 data/cache
 data/jobs.json
