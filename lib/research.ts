@@ -6,6 +6,8 @@
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 import * as tracker from "./tracker";
+
+const PROJECT_DIR = join(import.meta.dir, "..");
 import { formatDescriptionForPrompt } from "./format";
 
 function loadProfile(): any | null {
@@ -64,7 +66,7 @@ Format as a clean markdown document with these sections. Be factual — cite sou
 
 After writing the file, update the job status:
 \`\`\`bash
-cd ~/.claude/skills/job-hunter && bun run job-hunt.ts jobs status ${id} researched
+cd ${PROJECT_DIR} && bun run job-hunt.ts jobs status ${id} researched
 \`\`\``;
 }
 

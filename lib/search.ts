@@ -97,11 +97,17 @@ async function searchGreenhouse(
 
   for (const board of boards) {
     try {
-      const res = await fetch(
-        `https://boards-api.greenhouse.io/v1/boards/${board}/jobs?content=true`
-      );
-      if (!res.ok) continue;
-      const data = await res.json();
+      // Fetch board metadata and job listings in parallel to get real company name
+      const [boardRes, jobsRes] = await Promise.all([
+        fetch(`https://boards-api.greenhouse.io/v1/boards/${board}`),
+        fetch(`https://boards-api.greenhouse.io/v1/boards/${board}/jobs?content=true`),
+      ]);
+      if (!jobsRes.ok) continue;
+      const [boardData, data] = await Promise.all([
+        boardRes.ok ? boardRes.json() : Promise.resolve({}),
+        jobsRes.json(),
+      ]);
+      const companyName: string = boardData.name || board;
 
       const scored = (data.jobs || [])
         .map((j: any) => {
@@ -114,7 +120,7 @@ async function searchGreenhouse(
       for (const { job: j } of scored) {
         results.push({
           title: j.title,
-          company: board,
+          company: companyName,
           location: j.location?.name || "Unknown",
           isRemote: /remote/i.test(j.location?.name || ""),
           jobUrl: j.absolute_url,

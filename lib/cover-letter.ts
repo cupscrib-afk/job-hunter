@@ -6,6 +6,8 @@
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import * as tracker from "./tracker";
+
+const PROJECT_DIR = join(import.meta.dir, "..");
 import * as research from "./research";
 import * as tailor from "./tailor";
 import { formatDescriptionForPrompt } from "./format";
@@ -81,7 +83,7 @@ Write a cover letter to \`${tracker.outputDir(id)}/cover-letter.md\`.
 
 After writing the file, update the tracker:
 \`\`\`bash
-cd ~/.claude/skills/job-hunter && bun run job-hunt.ts jobs status ${id} tailored
+cd ${PROJECT_DIR} && bun run job-hunt.ts jobs status ${id} tailored
 \`\`\``;
 }
 

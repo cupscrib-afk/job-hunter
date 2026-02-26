@@ -7,6 +7,8 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, copyFileSync } from "fs";
 import { join } from "path";
 import * as tracker from "./tracker";
+
+const PROJECT_DIR = join(import.meta.dir, "..");
 import * as research from "./research";
 import { formatDescriptionForPrompt } from "./format";
 
@@ -272,7 +274,7 @@ Aim for 5-10 high-impact suggestions. Prioritize changes that would make the big
 
 After writing the file, confirm by running:
 \`\`\`bash
-cd ~/.claude/skills/job-hunter && bun run job-hunt.ts review apply${jobId ? ` ${jobId}` : ""}
+cd ${PROJECT_DIR} && bun run job-hunt.ts review apply${jobId ? ` ${jobId}` : ""} --all
 \`\`\``;
 }
 

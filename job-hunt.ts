@@ -16,6 +16,10 @@
  *   profile                        Show current profile
  *   profile init                   Create profile from example
  *   cache clear                    Clear search cache
+ *   review [jobId]                 Generate or run interactive resume review
+ *   review apply [jobId]           Apply all pending suggestions
+ *   review list [jobId]            List suggestions
+ *   serve [--port N]               Start the web UI (default 3000)
  *
  * Search options:
  *   --site linkedin|indeed         Restrict to one job board
@@ -38,6 +42,8 @@ import * as fmt from "./lib/format";
 import * as research from "./lib/research";
 import * as tailor from "./lib/tailor";
 import * as coverLetter from "./lib/cover-letter";
+import * as review from "./lib/review";
+import { startServer } from "./lib/server";
 
 const SKILL_DIR = import.meta.dir;
 const PROFILE_PATH = join(SKILL_DIR, "data", "profile.json");
@@ -134,7 +140,9 @@ async function cmdSearch() {
   if (save) {
     let added = 0;
     for (const j of jobs) {
-      const tracked = tracker.add({
+      const id = tracker.jobId(j.jobUrl);
+      const isNew = !tracker.get(id);
+      tracker.add({
         title: j.title,
         company: j.company,
         location: j.location,
@@ -145,11 +153,9 @@ async function cmdSearch() {
         salary: j.salary,
         description: j.description,
       });
-      if (tracked.dateFound === new Date().toISOString().split("T")[0] || true) {
-        added++;
-      }
+      if (isNew) added++;
     }
-    console.error(`\nSaved ${added} jobs to tracker.`);
+    console.error(`\nSaved ${added} new job(s) to tracker.`);
   }
 
   console.error(`\n${jobs.length} results from ${new Set(jobs.map((j) => j.source)).size} source(s)`);
@@ -480,6 +486,53 @@ function cmdCache() {
   }
 }
 
+async function cmdReview() {
+  const sub = args[1];
+  const knownSubs = ["apply", "list"];
+
+  // review apply [jobId] [--all | default all]
+  if (sub === "apply") {
+    const jobId = args[2] || undefined;
+    const result = review.applyByIds("all", jobId);
+    if (result.applied.length === 0) {
+      console.log("No suggestions to apply. Run `review` first to generate them.");
+    } else {
+      if (result.backupCreated) console.log("Backup saved to data/profile.backup.json");
+      console.log(`Applied ${result.applied.length} suggestion(s): ${result.applied.join(", ")}`);
+      if (result.skipped.length > 0) console.log(`Skipped: ${result.skipped.join(", ")}`);
+    }
+    return;
+  }
+
+  // review list [jobId]
+  if (sub === "list") {
+    const jobId = args[2] || undefined;
+    console.log(review.formatSuggestionsList(jobId));
+    return;
+  }
+
+  // review [jobId] — interactive if suggestions exist, otherwise print analysis prompt
+  const jobId = sub && !knownSubs.includes(sub) ? sub : undefined;
+
+  if (review.hasSuggestions(jobId)) {
+    await review.runInteractiveReview(jobId);
+  } else {
+    try {
+      const prompt = review.buildAnalysisPrompt(jobId);
+      console.log(prompt);
+    } catch (e: any) {
+      console.error(e.message);
+      process.exit(1);
+    }
+  }
+}
+
+function cmdServe() {
+  const portOpt = getOpt("port");
+  const port = parseInt(portOpt || args[1] || "3000");
+  startServer(isNaN(port) ? 3000 : port);
+}
+
 function usage() {
   console.log(`job-hunt — Job application pipeline CLI
 
@@ -497,6 +550,10 @@ Commands:
   profile                        Show current profile
   profile init                   Create profile.json from example
   cache clear                    Clear search cache
+ review [jobId]                  Generate or run interactive resume review
+ review apply [jobId]            Apply all pending suggestions to profile.json
+ review list [jobId]             List suggestions without applying
+ serve [--port N]                Start the web UI (default port 3000)
 
 Search options:
   --site linkedin|indeed         Restrict to one job board
@@ -547,6 +604,13 @@ async function main() {
       break;
     case "cache":
       cmdCache();
+      break;
+    case "review":
+    case "rv":
+      await cmdReview();
+      break;
+    case "serve":
+      cmdServe();
       break;
     default:
       usage();
